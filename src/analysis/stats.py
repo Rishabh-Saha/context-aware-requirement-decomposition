@@ -75,16 +75,52 @@ def holm_bonferroni(pvalues: list[float], alpha: float = 0.05) -> list[dict]:
 
 
 def cohens_kappa(rater_a: list, rater_b: list, ci: bool = True) -> dict:
-    """Cohen's kappa for the Layer 4 calibration, with an approximate 95% CI for the small sample."""
+    """Cohen's kappa with a 95% CI from the standard large-sample variance.
+ 
+    rater_a / rater_b are parallel label sequences. Labels may be any hashable value; the
+    agreement table is built over the union of labels actually observed.
+    """
     from sklearn.metrics import cohen_kappa_score  # lazy
-
+ 
+    n = len(rater_a)
     k = float(cohen_kappa_score(rater_a, rater_b))
-    result = {"kappa": round(k, 4), "n": len(rater_a)}
-    if ci and len(rater_a) > 1:
-        # Normal-approximation CI. With ~20 pairs this is wide on purpose; report it as such.
-        po = sum(a == b for a, b in zip(rater_a, rater_b)) / len(rater_a)
-        se = math.sqrt(max(po * (1 - po), 1e-9) / (len(rater_a) * (1 - k) ** 2)) if k != 1 else 0.0
-        result["ci95"] = (round(k - 1.96 * se, 4), round(min(1.0, k + 1.96 * se), 4))
+    result = {"kappa": round(k, 4), "n": n}
+    if not ci or n <= 1:
+        return result
+ 
+    labels = sorted({*rater_a, *rater_b}, key=str)
+    idx = {lab: i for i, lab in enumerate(labels)}
+    m = len(labels)
+ 
+    # Observed proportions p[i][j], row marginals p_i., column marginals p_.j
+    p = [[0.0] * m for _ in range(m)]
+    for a, b in zip(rater_a, rater_b):
+        p[idx[a]][idx[b]] += 1.0 / n
+    row = [sum(p[i]) for i in range(m)]
+    col = [sum(p[i][j] for i in range(m)) for j in range(m)]
+ 
+    po = sum(p[i][i] for i in range(m))
+    pe = sum(row[i] * col[i] for i in range(m))
+    if abs(1.0 - pe) < 1e-12:
+        return result
+ 
+    # Standard asymptotic variance of kappa.
+    term1 = sum(
+        p[i][i] * ((1.0 - pe) - (row[i] + col[i]) * (1.0 - po)) ** 2
+        for i in range(m)
+    )
+    term2 = (1.0 - po) ** 2 * sum(
+        p[i][j] * (col[i] + row[j]) ** 2
+        for i in range(m)
+        for j in range(m)
+        if i != j
+    )
+    term3 = (po * pe - 2.0 * pe + po) ** 2
+    var = (term1 + term2 - term3) / (n * (1.0 - pe) ** 4)
+ 
+    se = math.sqrt(var) if var > 0 else 0.0
+    result["ci95"] = (round(k - 1.96 * se, 4), round(min(1.0, k + 1.96 * se), 4))
+    result["raw_agreement"] = round(po, 4)
     return result
 
 

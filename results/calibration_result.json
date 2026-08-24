@@ -7,86 +7,86 @@
     "kappa": 0.5649,
     "n": 19,
     "ci95": [
-      0.1881,
-      0.9417
+      0.1305,
+      0.9993
     ],
+    "raw_agreement": 0.8421,
     "threshold": 0.6,
     "layer3_validated": false,
-    "usable": true,
-    "raw_agreement": 0.8421
+    "usable": true
   },
   "pooled_criteria": {
     "kappa": 0.6,
     "n": 72,
     "ci95": [
-      0.3848,
-      0.8152
+      0.4001,
+      0.7999
     ],
+    "raw_agreement": 0.8333,
     "threshold": 0.6,
     "layer3_validated": true,
-    "usable": true,
-    "raw_agreement": 0.8333
+    "usable": true
   },
   "per_criterion": {
     "actionability": {
       "kappa": 0.6735,
       "n": 16,
       "ci95": [
-        0.1772,
+        0.2734,
         1.0
       ],
+      "raw_agreement": 0.875,
       "threshold": 0.6,
       "layer3_validated": true,
-      "usable": true,
-      "raw_agreement": 0.875
+      "usable": true
     },
     "completeness": {
       "kappa": 0.6129,
       "n": 16,
       "ci95": [
-        0.1188,
+        0.2224,
         1.0
       ],
+      "raw_agreement": 0.8125,
       "threshold": 0.6,
       "layer3_validated": true,
-      "usable": true,
-      "raw_agreement": 0.8125
+      "usable": true
     },
     "project_specificity": {
       "kappa": 0.56,
       "n": 11,
       "ci95": [
-        0.042,
+        0.0647,
         1.0
       ],
+      "raw_agreement": 0.8182,
       "threshold": 0.6,
       "layer3_validated": false,
-      "usable": true,
-      "raw_agreement": 0.8182
+      "usable": true
     },
     "granularity": {
       "kappa": 0.3171,
       "n": 14,
       "ci95": [
-        -0.0294,
-        0.6636
+        -0.1899,
+        0.8241
       ],
+      "raw_agreement": 0.7143,
       "threshold": 0.6,
       "layer3_validated": false,
-      "usable": true,
-      "raw_agreement": 0.7143
+      "usable": true
     },
     "clarity": {
       "kappa": 0.8148,
       "n": 15,
       "ci95": [
-        0.1331,
+        0.4702,
         1.0
       ],
+      "raw_agreement": 0.9333,
       "threshold": 0.6,
       "layer3_validated": true,
-      "usable": true,
-      "raw_agreement": 0.9333
+      "usable": true
     }
   },
   "n_pairs_in_key": 20,
