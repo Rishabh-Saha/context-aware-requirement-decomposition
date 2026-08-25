@@ -1,4 +1,5 @@
-"""Hybrid retrieval (proposal Section 7.2): dense (cosine over embeddings) plus lexical
+"""Hybrid retrieval (proposal Section 7.2): dense (embedding distance, see index.dense_query for
+which distance space the collection actually uses) plus lexical
 (token-overlap) candidate lists, fused with Reciprocal Rank Fusion. Ablation conditions are applied
 by restricting the active context types before fusion.
 

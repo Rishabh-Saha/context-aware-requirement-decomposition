@@ -35,6 +35,9 @@ class ContextIndex:
         if self._collection is None:
             import chromadb
             client = chromadb.PersistentClient(path=self.persist_dir)
+            # No metadata is passed, so the collection keeps Chroma's default hnsw:space of "l2"
+            # (squared L2). The reported run was built and queried under that default; it is
+            # recorded here because a default a reader can't see is a default they can't reproduce.
             self._collection = client.get_or_create_collection(self.collection_name)
         return self._collection
 
@@ -97,7 +100,10 @@ class ContextIndex:
         top_k: int,
         exclude_issue_id: str | None = None,
     ):
-        """Cosine-ranked candidates restricted to the active context types via metadata filter.
+        """Distance-ranked candidates restricted to the active context types via metadata filter.
+        No hnsw:space was set when the collection was created (see _ensure), so ranking uses
+        ChromaDB's default squared-L2 distance, not cosine. Changing the space now would rank the
+        existing embeddings differently and no longer match the reported run.
         exclude_issue_id additionally drops past_tickets chunks whose issue_id matches the
         requirement being decomposed, so a requirement can't retrieve itself; chunks with no
         issue_id (design_docs, coding_conventions, codebase_summaries) are unaffected."""

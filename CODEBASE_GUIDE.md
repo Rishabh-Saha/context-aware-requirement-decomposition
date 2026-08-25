@@ -302,10 +302,16 @@ tests/                 one test module per implemented component, fixtures over 
     `xml.etree.ElementTree`. Four of the fifteen files (`basic`, `func`, `pig-index`, `udf.xml`)
     contain undeclared HTML entities (`&nbsp;`, `&lsquo;`, ...) with no DTD to resolve them, which
     plain `ElementTree` rejects; these are substituted via `html.entities.html5` before parsing.
-    `site.xml`/`tabs.xml` are pure navigation config and correctly yield no chunk.
+    `site.xml`/`tabs.xml` are pure navigation config and correctly yield no chunk. The glob is
+    non-recursive and covers that one directory, so the `translations/`, `skinconf`, and `jdiff`
+    XML elsewhere under `src/docs/` is out of scope; 13 files reach the index. A file that fails
+    to parse is skipped with a printed `SKIPPED` line rather than silently.
   - `coding_convention_chunks(repo_path)` — `data/repos/pig/test/checkstyle.xml` + top-level
     `README.txt`, kept as raw text (not XML-parsed) because checkstyle's descriptive value lives
-    mostly in its XML *comments*, which `ElementTree` silently drops.
+    mostly in its XML *comments*, which `ElementTree` silently drops. Keeping it raw also means the
+    XML tags are indexed. Worth naming these for what they are rather than by the category label:
+    a style configuration and a project overview with build/usage notes. Pig ships no contributor
+    guide in the clone, which is why this category is only 22 passages.
   - `codebase_summary_chunks(repo_path, cache_dir, llm=None, file_paths=None, confirm=False)` —
     one LLM summary per `.java` file under `data/repos/pig/src/org/apache/pig/` (the real test
     tree lives in a separate top-level `test/` directory, so scoping to `src/org` already excludes

@@ -2,9 +2,15 @@
 
 Jira descriptions and comments in this dump embed raw source dumps and stack traces inside
 {code}/{noformat} blocks, plus bare URLs. None of that is prose a retrieval embedding should
-represent, so it is removed rather than reformatted. This is the one place the cleanup lives; call
-it both when building past-ticket chunks and when building a retrieval query from the requirement
-text itself, so the two can't drift apart.
+represent, so it is removed rather than reformatted.
+
+Scope, as the pipeline actually runs it: this cleanup is applied to the indexed past-ticket text
+only (src/retrieval/sources.py). The retrieval query is the requirement's title and description as
+recorded, uncleaned (src/pipeline/generate.py), so a query can carry formatting the corpus does
+not. That asymmetry applies identically to every condition and is described in the thesis, so do
+not "fix" it by cleaning the query here: doing so would change retrieval behaviour after the fact.
+Note also what is not removed. Only {code}/{noformat} blocks, Java stack-trace lines, and bare URLs
+go; other Jira wiki markup (headings, bold, list markers, tables) stays in the indexed text.
 """
 
 from __future__ import annotations

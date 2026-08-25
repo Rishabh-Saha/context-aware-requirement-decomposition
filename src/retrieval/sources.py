@@ -97,7 +97,10 @@ def design_document_chunks(docs_dir: str | Path) -> list[Chunk]:
         raw = path.read_text(errors="replace")
         try:
             root = ET.fromstring(_fix_undeclared_entities(raw))
-        except ET.ParseError:
+        except ET.ParseError as exc:
+            # Skipping is right (an unparseable xdoc has no extractable prose), but silently is
+            # not: a corpus that quietly shrinks by a file looks identical to one that didn't.
+            print(f"  SKIPPED {path.name}: XML parse error ({exc})")
             continue
         text = " ".join(t.strip() for t in root.itertext() if t.strip())
         if not text:
@@ -113,9 +116,15 @@ def design_document_chunks(docs_dir: str | Path) -> list[Chunk]:
 
 
 def coding_convention_chunks(repo_path: str | Path) -> list[Chunk]:
-    """One chunk each for checkstyle.xml and README.txt (coding_conventions context type), kept as
-    raw text rather than XML-parsed: checkstyle's value here is in its rule comments, not a
-    validated structure."""
+    """One chunk each for test/checkstyle.xml and the repository's top-level README.txt
+    (coding_conventions context type), kept as raw text rather than XML-parsed: checkstyle's value
+    here is in its rule comments, not a validated structure. Keeping it raw does mean the XML tags
+    are indexed alongside those comments.
+
+    What these two files are, stated plainly because the category name oversells them: a style
+    configuration and a project overview with build and usage notes. Pig carries no contributor
+    guide in the clone, so this category is thin by the project's nature, not by a sampling choice,
+    which is also why it contributes far fewer passages than the other three (see Section 3.6)."""
     repo_path = Path(repo_path)
     sources = (
         ("checkstyle", repo_path / "test" / "checkstyle.xml"),
