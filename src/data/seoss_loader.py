@@ -9,8 +9,10 @@ Wired to the confirmed SEOSS 33 schema. The tables used here:
     change_set_link  the trace link joining a commit_hash to an issue_id
     code_change      files touched per commit (file_path, change_type, is_deleted)
 
-The commit_hash values match the Apache Pig git history, so commit_for_issue() returns an anchor
-that resolve_commit_window() (Layer 2) can use directly against the cloned repo.
+The commit_hash values do NOT match the hashes in the apache/pig clone. SEOSS built change_set from
+a different git conversion of Pig, so every commit is present in the clone under a different hash.
+Anchors are therefore resolved by message subject, author, and date via commit_resolver, which is
+what local_anchor_commits() does; a dataset hash must never be handed to Layer 2 directly.
 """
 
 from __future__ import annotations

@@ -42,7 +42,14 @@ def _has_discussion(loader: SeossLoader, issue_id: str) -> bool:
 
 def _acceptance_commit(loader: SeossLoader, issue_id: str) -> str | None:
     """Latest commit linked to the issue that actually touches code. (This SEOSS dump does not
-    flag merges, so there is no merge to skip; the code-touching check is the real signal.)"""
+    flag merges, so there is no merge to skip; the code-touching check is the real signal.)
+
+    Note this is stricter than SeossLoader.anchor_commit_obj, which falls back to the latest linked
+    commit when none touch code. The two therefore agree for anything selected at level 0 or 1, and
+    can disagree at level 2: a record could carry resolution_commit=None from here while
+    local_commits below resolves the fallback commit. No frozen requirement hits that case, since all
+    twenty qualified at level 0, but a re-freeze on other filters could produce such a record.
+    """
     for c in reversed(loader.commits_for_issue(issue_id)):
         if loader.files_changed(c.commit_hash):
             return c.commit_hash
