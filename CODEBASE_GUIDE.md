@@ -192,20 +192,28 @@ duplicate of the same change). It also calls `loader.reference_artefacts(issue_i
 returns a `tuple[ContextType, ...]` — e.g. `FULL_RAG` → all four, `NO_PAST_TICKETS` → the other
 three, `VANILLA` → `()`. This tuple is the only thing that changes between conditions from here on.
 
-**4. Retrieval turns text into a `dict[ContextType, list[str]]`.** The requirement's title/
-description is cleaned with `strip_jira_markup` first (removes `{code}`/`{noformat}` blocks, raw
-URLs, stack traces — the same cleaner `past_tickets_chunks` applies when building the index, so a
-query and its corpus can't drift apart). For each active context type, `hybrid_retrieve(query,
-active, index, top_k=8, exclude_issue_id=requirement.issue_key)` (hybrid.py, still scaffolded):
+**4. Retrieval turns text into a `dict[ContextType, list[str]]`.** The query is the requirement's
+title and description exactly as recorded, *not* cleaned with `strip_jira_markup`: that cleaner is
+applied only to the indexed past-ticket text in `past_tickets_chunks`, so a query can carry Jira
+formatting the corpus does not. The asymmetry is identical across all six conditions and is
+deliberate (see text_clean.py's module docstring) — don't "fix" it, it would change retrieval after
+the fact. `retrieve_by_type` then calls `hybrid_retrieve(query, (ctype,), index, top_k=PER_TYPE=2,
+exclude_issue_id=..., exclude_issue_ids=...)` once **per active context type**, never once across
+all of them:
    - dense candidates: `embed_texts([query])[0]` → a 1536-dim vector → `index.dense_query(vector,
      active, top_k, exclude_issue_id)`, filtered server-side by `context_type: {"$in": [...]}` and,
      when given, `issue_id: {"$ne": ...}` so a requirement's own past_ticket chunk can never be
-     retrieved for itself — ranked chunk ids.
-   - lexical candidates: `lexical_rank(query, candidate_texts)` → ranked chunk ids by token
-     overlap, no embedding call.
-   - `reciprocal_rank_fusion([dense_ids, lexical_ids], k=50)[:8]` → the final `list[str]` of chunk
-     ids, resolved back to chunk text.
-   The result across all active types is what `build_prompt` receives as its `retrieved` argument.
+     retrieved for itself — the top 2 ranked chunk ids for that type. Chunks with no `issue_id`
+     (every type but past_tickets) survive that `$ne`; `tests/test_index.py` pins it.
+   - lexical candidates: `lexical_rank(query, candidate_texts)` → every chunk of that type with at
+     least one shared token, ranked by overlap count, no embedding call.
+   - `reciprocal_rank_fusion([dense_ids, lexical_ids], k=50)`, re-checked against the exclusion set,
+     then `[:2]` → the chunk ids for that type, resolved back to chunk text. Because the dense list
+     is only 2 long and is fused first, a chunk found by both channels wins; otherwise the pair is
+     the top dense chunk plus the top lexical one.
+   Types that retrieve nothing are dropped rather than mapped to `[]`, so `build_prompt` never emits
+   an empty labelled section. In the reported run no type ever came back empty: every `full_rag`
+   prompt carried 8 passages in 4 blocks, every leave-one-out 6 in 3.
 
 **5. Prompt assembly flattens that dict into one string.** `build_prompt(title, description,
 retrieved)` → a single prompt string with labelled sections in a fixed order, empty sections
@@ -350,12 +358,13 @@ tests/                 one test module per implemented component, fixtures over 
     complete, otherwise `full_rag`/leave-one-out conditions would run against an incomplete
     codebase and the ablation would be invalid. (Not yet wired into an automatic run script — that
     lands with the run driver in a later sub-part.)
-- **`hybrid.py`** — the one piece still scaffolded: dense candidates from `index.dense_query`,
-  lexical candidates from the local token-overlap `lexical_rank`, fused with
-  `reciprocal_rank_fusion`, top 8 returned
-  (`TOP_K = 8`, matches `config.yaml: retrieval.top_k`). The `active` context types passed in are
-  exactly `conditions.active_contexts(condition)` — this is the mechanism that makes the six
-  conditions "the same call, different filter."
+- **`hybrid.py`** — dense candidates from `index.dense_query`, lexical candidates from the local
+  token-overlap `lexical_rank`, fused with `reciprocal_rank_fusion`. Two entry points, and only one
+  of them ran: `retrieve_by_type` (`PER_TYPE = 2`, one fused list per context type) is what the
+  pipeline calls; `hybrid_retrieve`'s `TOP_K = 8` default is a leftover of the abandoned global
+  top-k design and is always overridden. Nothing in the reported run retrieved a global top 8. The
+  `active` context types passed in are exactly `conditions.active_contexts(condition)` — this is the
+  mechanism that makes the six conditions "the same call, different filter."
 
 ## Conditions (`src/conditions.py`) — done and tested
 

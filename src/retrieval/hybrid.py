@@ -29,10 +29,14 @@ from collections.abc import Iterable
 from src.conditions import ContextType
 from src.retrieval.fusion import RRF_K, reciprocal_rank_fusion
 
+# NOT the pipeline's retrieval budget, despite the name. This is only the default for the abandoned
+# global top-k path below, where retrieve_by_type always overrides it with PER_TYPE. The reported run
+# never retrieved a global top 8, so do not read this constant (or config.yaml) as a record of it.
 TOP_K = 8
 
-# Per-type retrieval budget (docs/DECISION_retrieval_budget.md, Option B). Four active types at two
-# chunks each keeps the original top-8 prompt size while guaranteeing every type is represented.
+# The budget the pipeline actually runs on (docs/DECISION_retrieval_budget.md, Option B). Four active
+# types at two chunks each keeps the original top-8 prompt size while guaranteeing every type is
+# represented.
 PER_TYPE = 2
 
 

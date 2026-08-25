@@ -14,10 +14,11 @@ embedding:
   provider: openai
   model: text-embedding-3-small
 
-retrieval:
+retrieval:                        # documentation copy; the code reads its own constants, not these
   chunk_size: 500
   chunk_overlap: 50
-  top_k: 8
+  per_type: 2                     # per-category budget (Option B), NOT a global top-k
+  dense_candidates_per_type: 2    # dense channel returns this many before fusion within a category
   rrf_k: 50
 
 data:

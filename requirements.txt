@@ -4,7 +4,11 @@ pydantic>=2.7
 # Retrieval / RAG (proposal Section 9.2)
 langchain>=0.3
 langchain-text-splitters>=0.3
-chromadb>=0.5
+# Pinned, not floored: self-exclusion is one `issue_id: {$ne: ...}` clause, and every category
+# except past_tickets stores no issue_id at all. Those chunks survive the filter on 1.1.0 (pinned by
+# tests/test_index.py). A release that treated a missing key as failing `$ne` would empty three of
+# the four categories without erroring.
+chromadb==1.1.0
 openai>=1.40
 anthropic>=0.39
 # Data / repo access

@@ -78,6 +78,29 @@ def test_dense_query_excludes_own_issue_id(index):
     assert result["ids"][0] == ["past_ticket::PIG-2::0"]
 
 
+def test_dense_query_exclusion_keeps_chunks_that_have_no_issue_id(index):
+    """The self-exclusion filter is a single `issue_id: {$ne: ...}` clause, and only past_tickets
+    chunks carry issue_id at all. If chromadb ever treated a missing key as failing `$ne`, the
+    design_documents, coding_conventions and codebase_summaries categories would silently return
+    nothing whenever exclusion was active, which is every real generation. Pin the behaviour here
+    rather than in a docstring, because the whole per-category retrieval design depends on it."""
+    chunks = [
+        Chunk(id="past_ticket::PIG-1", text="alpha issue text", context_type=ContextType.PAST_TICKETS,
+              metadata={"issue_id": "PIG-1"}),
+        Chunk(id="design_doc::basic", text="alpha doc text", context_type=ContextType.DESIGN_DOCS,
+              metadata={"source": "basic.xml"}),
+    ]
+    index.add_chunks(chunks, embed_fn=_fake_embed)
+
+    result = index.dense_query(
+        _fake_embed(["alpha query"])[0],
+        active=(ContextType.PAST_TICKETS, ContextType.DESIGN_DOCS),
+        top_k=5,
+        exclude_issue_id="PIG-1",
+    )
+    assert result["ids"][0] == ["design_doc::basic::0"]
+
+
 def test_dense_query_empty_active_returns_no_results(index):
     chunks = [Chunk(id="past_ticket::PIG-1", text="alpha issue text",
                      context_type=ContextType.PAST_TICKETS, metadata={"issue_id": "PIG-1"})]
