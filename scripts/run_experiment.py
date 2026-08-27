@@ -43,7 +43,12 @@ from src.eval.file_verifier import FileVerifier  # noqa: E402
 from src.eval.rendering import cell_stem  # noqa: E402
 from src.eval.structural import structural_metrics  # noqa: E402
 from src.llm.factory import make_client  # noqa: E402
-from src.pipeline.generate import build_condition_prompt, run_condition  # noqa: E402
+from src.pipeline.generate import (  # noqa: E402
+    build_condition_prompt,
+    resolved_model,
+    run_condition_with_response,
+    system_prompt_sha256,
+)
 from src.retrieval.hybrid import PER_TYPE  # noqa: E402
 from src.retrieval.index import ContextIndex  # noqa: E402
 from src.schema import Decomposition  # noqa: E402
@@ -234,6 +239,10 @@ def main() -> int:
         "run_id": run_id,
         "started_at": datetime.now(timezone.utc).isoformat(),
         "generator": generator,
+        # Identifies the generation system prompt, which is the constant in src/pipeline/generate.py
+        # plus the schema. prompts/decomposition_system.txt is not loaded by any code path and is
+        # not what a run sends, so its hash must not be recorded here as if it were.
+        "system_prompt_sha256": system_prompt_sha256(),
         "summaries_incomplete": summaries_incomplete,
         "conditions": [c.value for c in CONDITIONS],
         "requirements": [r["issue_key"] for r in requirements],
@@ -279,7 +288,7 @@ def main() -> int:
                         prompt = build_condition_prompt(
                             requirement, condition, index, loader, per_type=args.per_type
                         )
-                        decomp = run_condition(
+                        decomp, response = run_condition_with_response(
                             requirement, condition, index, loader, llm,
                             per_type=args.per_type, prompt=prompt,
                         )
@@ -293,9 +302,15 @@ def main() -> int:
                             "condition": condition.value,
                             "generated_at": datetime.now(timezone.utc).isoformat(),
                             "generator": generator,
+                            # What config asked for is `generator.model`, an alias. This is what the
+                            # provider says it ran, which is the dated snapshot behind that alias.
+                            "resolved_model": resolved_model(response),
                             "summaries_incomplete": summaries_incomplete,
                             "per_type": args.per_type,
                             "prompt_file": prompt_path.name,
+                            # The user prompt is archived per cell; the system prompt is one string
+                            # shared by all cells, so its hash is stamped instead of its text.
+                            "system_prompt_sha256": system_prompt_sha256(),
                             "decomposition": decomp.model_dump(mode="json"),
                         })
                         generated += 1

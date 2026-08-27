@@ -7,6 +7,7 @@ generations that are already sitting on disk, so it gets an end-to-end test with
 generator that asserts the second run spends nothing.
 """
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -14,10 +15,17 @@ from pathlib import Path
 
 import pytest
 
+import src.pipeline.generate as generate_module
 from src.conditions import Condition
 from src.data.frozen import load_frozen_requirements
 from src.eval.file_verifier import FileVerifier
-from src.pipeline.generate import run_condition
+from src.llm.base import LLMResponse
+from src.pipeline.generate import (
+    resolved_model,
+    run_condition,
+    system_prompt,
+    system_prompt_sha256,
+)
 from src.schema import Decomposition
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -112,6 +120,33 @@ def test_run_condition_with_prompt_skips_retrieval():
     assert llm.calls == 1
     # The archived prompt has to be the prompt that was actually sent, not a re-assembled twin.
     assert llm.prompts == ["PRE-ASSEMBLED PROMPT"]
+
+
+# -- generation provenance -------------------------------------------------------------------
+
+def test_system_prompt_hash_covers_the_schema_half():
+    """The stamped hash has to move when either half of the sent text moves, otherwise it proves
+    nothing about the prompt. The schema half is the easy one to forget, since it is generated."""
+    baseline = system_prompt_sha256()
+
+    assert baseline == hashlib.sha256(system_prompt().encode("utf-8")).hexdigest()
+    assert baseline != hashlib.sha256(generate_module.SYSTEM_PROMPT.encode("utf-8")).hexdigest()
+
+
+def test_resolved_model_reads_the_provider_reply_not_the_requested_alias():
+    """A run asks for an alias such as gpt-4o; the provider reports the dated snapshot it ran. The
+    two differ, and only the second says which weights produced the output."""
+
+    class RawReply:
+        model = "gpt-4o-2024-08-06"
+
+    requested = LLMResponse(text="{}", model="gpt-4o", raw=RawReply())
+    assert resolved_model(requested) == "gpt-4o-2024-08-06"
+
+
+def test_resolved_model_is_absent_rather_than_fatal_when_unreported():
+    """A stub client, or a provider that omits the field, must not take a good generation down."""
+    assert resolved_model(LLMResponse(text="{}", model="stub-model")) is None
 
 
 # -- pure helpers ----------------------------------------------------------------------------

@@ -257,7 +257,8 @@ src/
   eval/                the four evaluation layers
   analysis/stats.py    the pre-registered statistical procedures
   utils/               JSON/JSONL I/O, logging
-prompts/               system prompt for generation, pairwise-judge template
+prompts/               pairwise-judge template (loaded at run time); decomposition_system.txt is
+                       an unused copy, the live generation system prompt is in generate.py
 config/config.yaml     single source of truth for models, paths, thresholds
 tests/                 one test module per implemented component, fixtures over mocks
 ```
