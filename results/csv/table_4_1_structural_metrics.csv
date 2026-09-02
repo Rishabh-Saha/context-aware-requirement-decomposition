@@ -1,0 +1,7 @@
+condition,n,num_user_stories,well_formedness_rate,avg_acceptance_criteria,file_reference_specificity,inter_story_dependency_rate,dangling_dependency_count
+vanilla,20,3.9,0.7792,2.6408,1.0,0.4583,0
+full_rag,20,3.3,0.6333,2.66,0.96,0.4083,0
+full_rag_minus_past_tickets,20,3.55,0.7083,2.6233,1.0,0.4433,0
+full_rag_minus_design_documents,20,3.3,0.7667,2.775,1.0,0.4167,0
+full_rag_minus_coding_conventions,20,3.45,0.7708,2.5558,1.0,0.4125,0
+full_rag_minus_codebase_summaries,20,3.35,0.7583,2.7133,1.0,0.3833,0

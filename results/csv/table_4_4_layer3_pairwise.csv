@@ -1,0 +1,8 @@
+comparison,sub_question,left,right,n,wins_left,wins_right,positional_inconsistent,sign_test_decided,sign_test_p_value
+full_rag_minus_past_tickets_vs_full_rag,SQ1,full_rag_minus_past_tickets,full_rag,20,10,6,4,16,0.454498
+full_rag_minus_design_documents_vs_full_rag,SQ1,full_rag_minus_design_documents,full_rag,20,9,7,4,16,0.803619
+full_rag_minus_coding_conventions_vs_full_rag,SQ1,full_rag_minus_coding_conventions,full_rag,20,10,6,4,16,0.454498
+full_rag_minus_codebase_summaries_vs_full_rag,SQ1,full_rag_minus_codebase_summaries,full_rag,20,9,9,2,18,1.0
+vanilla_vs_full_rag,SQ2,vanilla,full_rag,20,9,7,4,16,0.803619
+vanilla_vs_reference,SQ3,vanilla,reference,20,18,0,2,18,8e-06
+full_rag_vs_reference,SQ3,full_rag,reference,20,19,0,1,19,4e-06

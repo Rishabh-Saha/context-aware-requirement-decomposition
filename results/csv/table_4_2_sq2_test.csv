@@ -1,0 +1,2 @@
+comparison,vanilla_mean,full_rag_mean,n_pairs_nonzero,wilcoxon_statistic,p_value,rank_biserial
+vanilla vs full_rag,0.7033,0.4958,17,33.0,0.0388,0.5686

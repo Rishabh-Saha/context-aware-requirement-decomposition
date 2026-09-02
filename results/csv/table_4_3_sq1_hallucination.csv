@@ -1,0 +1,5 @@
+condition,comparison,condition_mean,full_rag_mean,n_pairs_nonzero,wilcoxon_statistic,p_value,adjusted_p,rank_biserial,reject_at_0.05
+full_rag_minus_past_tickets,full_rag_minus_past_tickets vs full_rag,0.5558,0.4958,11,22.5,0.3501,0.7799,0.3182,False
+full_rag_minus_design_documents,full_rag_minus_design_documents vs full_rag,0.4533,0.4958,9,13.0,0.26,0.7799,-0.4222,False
+full_rag_minus_coding_conventions,full_rag_minus_coding_conventions vs full_rag,0.4192,0.4958,9,11.5,0.1886,0.7544,-0.4889,False
+full_rag_minus_codebase_summaries,full_rag_minus_codebase_summaries vs full_rag,0.5464,0.4958,14,48.5,0.8015,0.8015,0.0762,False

@@ -77,12 +77,26 @@ python scripts/score_calibration.py --run-id 20260814T033139Z
 
 # 6. Regenerate every Chapter 4 table from the committed artefacts alone
 python scripts/aggregate_results.py --run-id 20260814T033139Z
+
+# 7. Flatten the same artefacts to CSV, for spreadsheets and plotting
+python scripts/export_csv.py --run-id 20260814T033139Z
 ```
 
 Steps 3 and 4 call paid model APIs and are not deterministic across providers or model versions.
 Steps 1, 2 and 5 are deterministic given the same inputs. Step 6 needs neither the SEOSS dump nor
 the Pig clone: it reads only `results/`, so any reader with the repository can reproduce the
 reported numbers.
+
+Step 7 recomputes nothing. `results_summary.csv` is the one file to send on its own: thirteen rows
+in plain sentences covering what was tested, what was found, and what should not be concluded from
+it, with the numbers filled in from `aggregates.json` so the prose cannot drift from the results.
+`all_reported_numbers.csv` is the complete version, every reported figure in long format. Alongside
+them are one row per cell (`cell_metrics.csv`), one per
+pairwise comparison (`judgments.csv`, `judgments_raw.csv`), and one file per Chapter 4 table, plus
+`user_stories.csv` with the 417 generated stories themselves. That last file is the only one needing
+the run directory rather than the results package, since per-cell decompositions are archived with
+the run and not committed; it is skipped with a notice when that directory is absent. Use
+`--out-dir` to write elsewhere.
 
 Step 2 spends one LLM call per uncached Java file, 1088 on a cold cache, which is why
 `--confirm-summaries` is required rather than default.

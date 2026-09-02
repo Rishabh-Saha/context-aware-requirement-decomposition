@@ -1,0 +1,8 @@
+scope,is_gate_metric,kappa,n,ci95_low,ci95_high,raw_agreement,threshold,layer3_validated
+overall,True,0.5649,19,0.1305,0.9993,0.8421,0.6,False
+pooled_criteria,False,0.6,72,0.4001,0.7999,0.8333,0.6,True
+actionability,False,0.6735,16,0.2734,1.0,0.875,0.6,True
+completeness,False,0.6129,16,0.2224,1.0,0.8125,0.6,True
+project_specificity,False,0.56,11,0.0647,1.0,0.8182,0.6,False
+granularity,False,0.3171,14,-0.1899,0.8241,0.7143,0.6,False
+clarity,False,0.8148,15,0.4702,1.0,0.9333,0.6,True

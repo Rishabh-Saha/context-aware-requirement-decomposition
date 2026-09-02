@@ -1,0 +1,7 @@
+condition,n,real_rate,ambiguous_rate,hallucinated_rate
+vanilla,20,0.0667,0.23,0.7033
+full_rag,20,0.0583,0.4458,0.4958
+full_rag_minus_past_tickets,20,0.0458,0.3983,0.5558
+full_rag_minus_design_documents,20,0.195,0.3517,0.4533
+full_rag_minus_coding_conventions,20,0.1208,0.46,0.4192
+full_rag_minus_codebase_summaries,20,0.2211,0.2325,0.5464

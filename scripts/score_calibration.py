@@ -190,11 +190,22 @@ def main() -> int:
     p = argparse.ArgumentParser(description="Score Layer 4 researcher-versus-judge agreement.")
     p.add_argument("--run-id", required=True)
     p.add_argument("--runs-dir", default=DEFAULT_RUNS_DIR)
+    # The published results package carries the ratings and the key under different names from the
+    # run directory, so these two overrides let a reader recompute the gate from the package alone
+    # rather than needing the full run tree. Without them Layer 4 would be the one reported figure
+    # that has to be taken on trust, which is the wrong figure to make unverifiable.
+    p.add_argument("--ratings", default=None,
+                   help="path to the filled ratings CSV; defaults to the run's calibration directory")
+    p.add_argument("--key", default=None,
+                   help="path to the hidden key; defaults to the run's calibration directory")
+    p.add_argument("--out", default=None,
+                   help="where to write result.json; defaults to the run's calibration directory")
     args = p.parse_args()
 
     cal_dir = Path(args.runs_dir) / args.run_id / CALIBRATION_SUBDIR
-    ratings_path = cal_dir / "calibration_ratings.csv"
-    key_path = cal_dir / "key.json"
+    ratings_path = Path(args.ratings) if args.ratings else cal_dir / "calibration_ratings.csv"
+    key_path = Path(args.key) if args.key else cal_dir / "key.json"
+    out_path = Path(args.out) if args.out else cal_dir / "result.json"
     for path in (ratings_path, key_path):
         if not path.exists():
             raise SystemExit(f"missing {path}; run scripts/build_calibration_set.py first")
@@ -258,8 +269,8 @@ def main() -> int:
             "judge's reconciled winner was null; each kappa reports its own n."
         ),
     }
-    write_json(cal_dir / "result.json", result)
-    print(f"\n  written to {cal_dir / 'result.json'}")
+    write_json(out_path, result)
+    print(f"\n  written to {out_path}")
     return 0 if gate_pass else 2
 
 
