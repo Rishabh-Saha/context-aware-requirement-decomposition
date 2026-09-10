@@ -240,7 +240,6 @@
       ],
       "raw_agreement": 0.8333,
       "threshold": 0.6,
-      "layer3_validated": true,
       "usable": true
     },
     "per_criterion": {
@@ -253,7 +252,6 @@
         ],
         "raw_agreement": 0.875,
         "threshold": 0.6,
-        "layer3_validated": true,
         "usable": true
       },
       "completeness": {
@@ -265,7 +263,6 @@
         ],
         "raw_agreement": 0.8125,
         "threshold": 0.6,
-        "layer3_validated": true,
         "usable": true
       },
       "project_specificity": {
@@ -277,7 +274,6 @@
         ],
         "raw_agreement": 0.8182,
         "threshold": 0.6,
-        "layer3_validated": false,
         "usable": true
       },
       "granularity": {
@@ -289,7 +285,6 @@
         ],
         "raw_agreement": 0.7143,
         "threshold": 0.6,
-        "layer3_validated": false,
         "usable": true
       },
       "clarity": {
@@ -301,7 +296,6 @@
         ],
         "raw_agreement": 0.9333,
         "threshold": 0.6,
-        "layer3_validated": true,
         "usable": true
       }
     }

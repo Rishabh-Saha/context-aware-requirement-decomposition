@@ -6,7 +6,7 @@ Applies to: generation run 20260814T033139Z
 ## Outcome
 Layer 4 researcher-vs-judge calibration on the 20-pair blind sample:
 - Overall (gate metric, researcher vs judge reconciled winner): Cohen's kappa = 0.56, n = 19,
-  95% CI [0.19, 0.94]. Pre-registered threshold is 0.6.
+  95% CI [0.13, 1.00]. Pre-registered threshold is 0.6.
 - Result: FAIL. The judge did not reach the substantial-agreement bar.
 
 Per-criterion kappa (each on its own n, cells dropped never imputed): actionability 0.67,

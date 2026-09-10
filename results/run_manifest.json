@@ -23,9 +23,10 @@
     "rrf_k": 50
   },
   "prompt_sha256": {
-    "prompts/decomposition_system.txt": "573457561a159eb165d6f36234327b8fc4c7f862831706a27e53bd72900d725c",
+    "src/pipeline/generate.py:system_prompt()": "e7e15d3add723a2d49b5c337c58bb4c8d653c683bc6f784e946958afc77b7d3a",
     "prompts/judge_pairwise.txt": "3e10eb5a92f2738282647d9e015beb17824c2fb4248873ca2b0f5da4422a3af4",
-    "_note": "judge_pairwise.txt hash is the current file content (the recovery-pass template, sha256_12 3e10eb5a92f2). 272 of 280 ordered judgements were produced under the prior template (sha256_12 b4497f7e4087, output-format instruction only); see prompt_revisions.json in the judge run directory."
+    "_note_generation_prompt": "The generation system prompt lives in code, not on disk: it is the SYSTEM_PROMPT constant in src/pipeline/generate.py plus the JSON schema derived from the Pydantic model, which together are what system_prompt() returns and system_prompt_sha256() hashes. Earlier versions of this manifest stamped prompts/decomposition_system.txt instead, which no code path reads and whose wording differs, so that hash did not identify the text any run sent. SYSTEM_PROMPT and src/schema.py are both unchanged since code_commit fe1809526cacfb654055df0f6d2ad9058f244949, so this hash is the text the 120 generations received, given the schema half is rendered by the pinned Pydantic version.",
+    "_note_judge_prompt": "judge_pairwise.txt hash is the current file content (the recovery-pass template, sha256_12 3e10eb5a92f2). 272 of 280 ordered judgements were produced under the prior template (sha256_12 b4497f7e4087, output-format instruction only); see prompt_revisions.json in the judge run directory."
   },
   "code_commit": "fe1809526cacfb654055df0f6d2ad9058f244949",
   "summaries_incomplete": false,

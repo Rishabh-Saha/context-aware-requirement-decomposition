@@ -80,6 +80,9 @@ python scripts/aggregate_results.py --run-id 20260814T033139Z
 
 # 7. Flatten the same artefacts to CSV, for spreadsheets and plotting
 python scripts/export_csv.py --run-id 20260814T033139Z
+
+# 8. Draw Figure 4.2 from the CSV step 7 wrote
+python scripts/plot_figure_4_2.py
 ```
 
 Steps 3 and 4 call paid model APIs and are not deterministic across providers or model versions.
@@ -97,6 +100,10 @@ pairwise comparison (`judgments.csv`, `judgments_raw.csv`), and one file per Cha
 the run directory rather than the results package, since per-cell decompositions are archived with
 the run and not committed; it is skipped with a notice when that directory is absent. Use
 `--out-dir` to write elsewhere.
+
+Step 8 reads `table_4_2_verdict_distribution.csv` and recomputes nothing either, so the figure and
+the table it sits beside cannot disagree. It writes `results/figures/` at 300 dpi and reports each
+row's verdict sum, warning rather than adjusting if one does not reach 1.000.
 
 Step 2 spends one LLM call per uncached Java file, 1088 on a cold cache, which is why
 `--confirm-summaries` is required rather than default.

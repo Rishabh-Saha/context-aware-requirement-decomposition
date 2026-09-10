@@ -339,8 +339,9 @@ def table_4_4_rows(aggregates: dict) -> list[dict]:
 def table_4_5_rows(aggregates: dict) -> list[dict]:
     """Layer 4 agreement, overall then pooled then per criterion.
 
-    `layer3_validated` is carried per scope so the gate outcome travels with the number. The gate is
-    decided on the overall winner alone: a per-criterion kappa above 0.6 does not validate Layer 3.
+    `layer3_validated` is only populated on the overall row, because the gate is decided on the
+    overall winner alone: a pooled or per-criterion kappa above 0.6 does not validate Layer 3. The
+    column stays blank on the other rows rather than carrying a comparison that reads like a pass.
     """
     table = aggregates.get("table_4_5_layer4_calibration", {})
     scopes = []

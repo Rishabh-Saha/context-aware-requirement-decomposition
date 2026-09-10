@@ -25,7 +25,7 @@ different model family (cross-family enforced in code).
 - Positional inconsistency: 21/140 = 15.0%.
 
 ## Layer 4 (calibration gate)
-- Overall Cohen's kappa = 0.56 (n = 19, 95% CI 0.19-0.94, raw agreement 0.84), below the 0.60 gate.
+- Overall Cohen's kappa = 0.56 (n = 19, 95% CI 0.13-1.00, raw agreement 0.84), below the 0.60 gate.
 - FAIL: Layer 3 is reported descriptively; Layers 1-2 carry the primary conclusions.
 - Single-annotator calibration; n small, so kappa is unstable. An LLM-filled rating sheet produced
   during the process was discarded as not independent human calibration. See

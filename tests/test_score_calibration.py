@@ -114,6 +114,38 @@ def test_gate_is_read_from_the_calibration_module():
     assert sc.KAPPA_THRESHOLD == 0.6
 
 
+def test_only_the_gate_line_prints_a_verdict():
+    """A pooled kappa of exactly 0.6 is the case that used to print PASS. The printed line has to
+    carry the number and the threshold without the word, for the same reason the JSON flag does."""
+    block = {"kappa": 0.6, "n": 72, "ci95": [0.4001, 0.7999], "raw_agreement": 0.8333,
+             "threshold": 0.6, "usable": True}
+
+    non_gate = sc.format_line("pooled criteria", block)
+    assert "PASS" not in non_gate and "FAIL" not in non_gate
+    assert "0.6" in non_gate and "threshold" in non_gate
+
+    assert sc.format_line("overall winner", block, gate_eligible=True).endswith("PASS")
+    below = {**block, "kappa": 0.5649}
+    assert sc.format_line("overall winner", below, gate_eligible=True).endswith("FAIL")
+
+
+def test_only_the_overall_block_carries_the_gate_flag(tmp_path, monkeypatch):
+    """The gate is defined on the overall winner, so `layer3_validated` must not appear on the
+    pooled or per-criterion blocks. A pooled kappa of 0.6 carrying the flag reads as a pass the
+    design never grants, and the pooled number is not the gate metric. The kappa and the threshold
+    stay on every block, so the comparison is still there for a reader who wants it."""
+    keys, ratings = build_2x2(both_a=9, both_b=9, researcher_a_judge_b=1, researcher_b_judge_a=1)
+    write_case(tmp_path, keys, ratings)
+    _, result = score(tmp_path, monkeypatch)
+
+    assert "layer3_validated" in result["overall"]
+    assert "layer3_validated" not in result["pooled_criteria"]
+    assert result["pooled_criteria"]["threshold"] == 0.6
+    assert result["pooled_criteria"]["kappa"] is not None
+    for criterion, block in result["per_criterion"].items():
+        assert "layer3_validated" not in block, criterion
+
+
 # ---------------------------------------------------------------- position and side translation
 
 def test_flipped_sheets_do_not_disturb_agreement(tmp_path, monkeypatch):

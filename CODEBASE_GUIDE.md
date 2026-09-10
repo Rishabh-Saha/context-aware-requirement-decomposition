@@ -458,7 +458,7 @@ same Pydantic model, so the validated contract and the prompted contract cannot 
 ## Running things
 
 ```bash
-cd thesis-code
+cd context-aware-requirements-decomposition
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env        # OPENAI_API_KEY / ANTHROPIC_API_KEY

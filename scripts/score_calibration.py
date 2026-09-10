@@ -144,13 +144,19 @@ def paired_choices(ratings: dict, keys: dict, column: str) -> tuple[list[str], l
     return researcher, judge, used
 
 
-def kappa_block(researcher: list[str], judge: list[str]) -> dict:
+def kappa_block(researcher: list[str], judge: list[str], gate_eligible: bool = False) -> dict:
     """calibrate() plus the guards json and a human reader both need.
 
     Two degenerate cases are handled rather than allowed to propagate. With fewer than two usable
     pairs there is nothing to compute. With perfect agreement on a single label, chance agreement is
     1 and Cohen's kappa is undefined; scikit-learn returns nan, which is not valid JSON and would
     otherwise fail the gate comparison silently rather than saying why.
+
+    `layer3_validated` survives only on the gate-eligible block. calibrate() attaches it to every
+    block it scores, but the pre-registered gate is defined on the overall winner alone, so a pooled
+    or per-criterion kappa above 0.6 carrying `layer3_validated: true` reads as a pass that the
+    design never grants. The kappa and the threshold both stay on every block, so a reader can still
+    see where each one sits relative to 0.6 without that comparison claiming to be the gate.
     """
     n = len(researcher)
     if n < 2:
@@ -160,14 +166,19 @@ def kappa_block(researcher: list[str], judge: list[str]) -> dict:
     result = calibrate(researcher, judge)
     kappa = result["kappa"]
     if math.isnan(kappa):
-        agreement = sum(a == b for a, b in zip(researcher, judge)) / n
-        return {
+        degenerate = {
             "kappa": None, "n": n, "usable": False,
-            "raw_agreement": round(agreement, 4),
-            "threshold": KAPPA_THRESHOLD, "layer3_validated": False,
+            "raw_agreement": round(sum(a == b for a, b in zip(researcher, judge)) / n, 4),
+            "threshold": KAPPA_THRESHOLD,
             "note": ("kappa is undefined because one rater used a single label throughout, so "
                      "chance agreement is 1. Raw agreement is reported instead."),
         }
+        if gate_eligible:
+            degenerate["layer3_validated"] = False
+        return degenerate
+
+    if not gate_eligible:
+        result.pop("layer3_validated", None)
 
     # cohens_kappa always attaches ci95 once n >= 2, which the guard above has established.
     result["ci95"] = [None if math.isnan(v) else v for v in result["ci95"]]
@@ -176,14 +187,24 @@ def kappa_block(researcher: list[str], judge: list[str]) -> dict:
     return result
 
 
-def format_line(label: str, block: dict) -> str:
+def format_line(label: str, block: dict, gate_eligible: bool = False) -> str:
+    """One printed line per scope. PASS or FAIL is only for the gate-eligible scope.
+
+    The gate is the overall winner, so a pooled or per-criterion line reading PASS would announce an
+    outcome the design does not grant, the same misreading `layer3_validated` used to invite in the
+    JSON. Those lines carry the threshold instead, which lets a reader place the kappa against 0.6
+    without the placement being dressed up as a verdict.
+    """
     if not block.get("usable"):
         return f"  {label:<20} n={block['n']:<3} kappa n/a  ({block.get('note', '')})"
     ci = block.get("ci95") or (None, None)
     ci_text = f"[{ci[0]}, {ci[1]}]" if ci[0] is not None else "[n/a]"
-    verdict = "PASS" if block["kappa"] >= KAPPA_THRESHOLD else "FAIL"
+    if gate_eligible:
+        closing = "PASS" if block["kappa"] >= KAPPA_THRESHOLD else "FAIL"
+    else:
+        closing = f"threshold {KAPPA_THRESHOLD}"
     return (f"  {label:<20} n={block['n']:<3} kappa={block['kappa']:<7} 95% CI {ci_text:<18} "
-            f"agreement={block['raw_agreement']:<6} {verdict}")
+            f"agreement={block['raw_agreement']:<6} {closing}")
 
 
 def main() -> int:
@@ -228,18 +249,21 @@ def main() -> int:
         pooled_judge += judge
 
     overall_researcher, overall_judge, overall_pairs = paired_choices(ratings, keys, OVERALL)
-    overall = kappa_block(overall_researcher, overall_judge)
+    overall = kappa_block(overall_researcher, overall_judge, gate_eligible=True)
     pooled = kappa_block(pooled_researcher, pooled_judge)
 
     gate_pass = bool(overall.get("usable") and overall["kappa"] >= KAPPA_THRESHOLD)
 
     print(f"\nLayer 4 calibration for {args.run_id}")
     print(f"  threshold: kappa >= {KAPPA_THRESHOLD} on the overall winner\n")
-    print(format_line("overall winner", overall))
+    print(format_line("overall winner", overall, gate_eligible=True))
     print(format_line("pooled criteria", pooled))
     print()
     for criterion in CRITERIA:
         print(format_line(criterion, per_criterion[criterion]))
+    print("\n  Only the overall winner is gate-eligible. The pooled and per-criterion lines show "
+          "where\n  each kappa sits against the same threshold, which is supporting detail rather "
+          "than a\n  pass or a fail.")
     if unrated:
         print(f"\n  {len(unrated)} pair(s) left entirely unrated: {', '.join(unrated)}")
 
